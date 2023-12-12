@@ -6,17 +6,26 @@ pipeline {
                 checkout scm
             }
         }
-
         stage("Build"){
             steps{
-                sh 'sudo apt install npm'
+                sh 'npm install'
                 sh 'npm run build'
             }
         }
-
-        stage("Build Image"){
+        stage("scp"){
             steps{
-                sh 'sudo docker build -t my-node-app:1.0 .'
+                sh 'sudo bash /home/ubuntu/scripts/scp.sh'
+            }
+        }
+        stage("deploy"){
+            steps{
+                sh '''ssh -T -o StrictHostKeyChecking=no ubuntu@35.173.180.82 <<EOF
+                        #!/bin/bash
+                        set -x
+                        sudo bash /home/ubuntu/scripts/deploy.sh
+                        exit
+                        EOF
+                '''
             }
         }
     }
